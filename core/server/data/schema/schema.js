@@ -1,3 +1,6 @@
+// Add in custom bio length - idiva
+var ENV = require('../../../client/config/environment')();
+
 module.exports = {
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -54,8 +57,10 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         profile_image: {type: 'string', maxlength: 2000, nullable: true},
         cover_image: {type: 'string', maxlength: 2000, nullable: true},
-        // change max bio length to 600 in schema - idiva
-        bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 600}}},
+        // add bio_length field
+        bio_length: {type: 'integer'},
+        // change max bio length to match env in schema - idiva
+        bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 200 && ENV.bioLength}}},
         website: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
         location: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 150}}},
         facebook: {type: 'string', maxlength: 2000, nullable: true},
