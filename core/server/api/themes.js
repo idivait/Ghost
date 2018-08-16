@@ -95,7 +95,7 @@ themes = {
         }
 
         return localUtils
-        // Permissions
+            // Permissions
             .handlePermissions('themes', 'add')(options)
             // Validation
             .then(function validateTheme() {
@@ -164,7 +164,7 @@ themes = {
             theme = themeList.get(themeName);
 
         if (!theme) {
-            return Promise.reject(new common.errors.BadRequestError({message: common.i18n.t('errors.api.themes.invalidRequest')}));
+            return Promise.reject(new common.errors.BadRequestError({message: common.i18n.t('errors.api.themes.invalidThemeName')}));
         }
 
         return localUtils

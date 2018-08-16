@@ -9,13 +9,15 @@ var _ = require('lodash'),
     configUtils = require('../utils/configUtils'),
     packageInfo = require('../../../package'),
     updateCheck = rewire('../../server/update-check'),
+    ghostVersion = rewire('../../server/lib/ghost-version'),
     SettingsAPI = require('../../server/api/settings'),
-    NotificationsAPI = require('../../server/api/notifications'),
+    NotificationsAPI = rewire('../../server/api/notifications'),
     sandbox = sinon.sandbox.create();
 
 describe('Update Check', function () {
     beforeEach(function () {
         updateCheck = rewire('../../server/update-check');
+        NotificationsAPI = rewire('../../server/api/notifications');
     });
 
     afterEach(function () {
@@ -23,13 +25,15 @@ describe('Update Check', function () {
         configUtils.restore();
     });
 
+    after(testUtils.teardown);
+
     describe('fn: updateCheck', function () {
         var updateCheckRequestSpy,
             updateCheckResponseSpy,
             updateCheckErrorSpy;
 
-        beforeEach(testUtils.setup('owner', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
-        afterEach(testUtils.teardown);
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'owner'));
 
         beforeEach(function () {
             updateCheckRequestSpy = sandbox.stub().returns(Promise.resolve());
@@ -105,9 +109,8 @@ describe('Update Check', function () {
             configUtils.restore();
         });
 
-        beforeEach(testUtils.setup('owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
-
-        afterEach(testUtils.teardown);
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'owner', 'settings', 'posts', 'perms:setting', 'perms:user', 'perms:init'));
 
         it('should report the correct data', function (done) {
             var updateCheckData = updateCheck.__get__('updateCheckData');
@@ -146,13 +149,12 @@ describe('Update Check', function () {
             updateCheck.__set__('ghostVersion.original', currentVersionOrig);
         });
 
-        beforeEach(testUtils.setup('owner', 'posts', 'settings', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('settings', 'roles', 'owner', 'perms:setting', 'perms:notification', 'perms:user', 'perms:init'));
 
         beforeEach(function () {
             return NotificationsAPI.destroyAll(testUtils.context.internal);
         });
-
-        afterEach(testUtils.teardown);
 
         it('should create a release notification for target version', function (done) {
             var createCustomNotification = updateCheck.__get__('createCustomNotification'),
@@ -167,6 +169,8 @@ describe('Update Check', function () {
                         top: true
                     }]
                 };
+
+            NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
 
             createCustomNotification(notification).then(function () {
                 return NotificationsAPI.browse(testUtils.context.internal);
@@ -183,6 +187,58 @@ describe('Update Check', function () {
                 targetNotification.top.should.eql(notification.messages[0].top);
                 targetNotification.type.should.eql('info');
                 targetNotification.message.should.eql(notification.messages[0].content);
+                done();
+            }).catch(done);
+        });
+
+        it('release notification version format is wrong', function (done) {
+            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
+                notification = {
+                    id: 1,
+                    custom: 0,
+                    messages: [{
+                        id: uuid.v4(),
+                        version: '0.9.x',
+                        content: '<p>Hey there! This is for 0.9 version</p>',
+                        dismissible: true,
+                        top: true
+                    }]
+                };
+
+            NotificationsAPI.__set__('ghostVersion.full', '0.8.1');
+
+            createCustomNotification(notification).then(function () {
+                return NotificationsAPI.browse(testUtils.context.internal);
+            }).then(function (results) {
+                should.exist(results);
+                should.exist(results.notifications);
+                results.notifications.length.should.eql(0);
+                done();
+            }).catch(done);
+        });
+
+        it('blog version format is wrong', function (done) {
+            var createCustomNotification = updateCheck.__get__('createCustomNotification'),
+                notification = {
+                    id: 1,
+                    custom: 0,
+                    messages: [{
+                        id: uuid.v4(),
+                        version: '0.9.x',
+                        content: '<p>Hey there! This is for 0.9.0 version</p>',
+                        dismissible: true,
+                        top: true
+                    }]
+                };
+
+            NotificationsAPI.__set__('ghostVersion.full', '0.8');
+
+            createCustomNotification(notification).then(function () {
+                return NotificationsAPI.browse(testUtils.context.internal);
+            }).then(function (results) {
+                should.exist(results);
+                should.exist(results.notifications);
+                results.notifications.length.should.eql(0);
                 done();
             }).catch(done);
         });
@@ -259,8 +315,8 @@ describe('Update Check', function () {
     });
 
     describe('fn: updateCheckResponse', function () {
-        beforeEach(testUtils.setup('settings', 'perms:setting', 'perms:init'));
-        afterEach(testUtils.teardown);
+        beforeEach(testUtils.teardown);
+        beforeEach(testUtils.setup('roles', 'settings', 'perms:setting', 'perms:init'));
 
         it('receives a notifications with messages', function (done) {
             var updateCheckResponse = updateCheck.__get__('updateCheckResponse'),
