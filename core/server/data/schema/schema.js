@@ -58,7 +58,7 @@ module.exports = {
         profile_image: {type: 'string', maxlength: 2000, nullable: true},
         cover_image: {type: 'string', maxlength: 2000, nullable: true},
         // add bio_length field
-        bio_length: {type: 'integer'},
+        bio_length: {type: 'integer', nullable: true},
         // change max bio length to match env in schema - idiva
         bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 200 && ENV.bioLength}}},
         website: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},

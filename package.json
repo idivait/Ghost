@@ -98,7 +98,11 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
+<<<<<<< HEAD
     "sqlite3": "4.0.1"
+=======
+    "sqlite3": "^3.1.13"
+>>>>>>> Modify schema to use bio env
   },
   "devDependencies": {
     "eslint": "4.19.1",
