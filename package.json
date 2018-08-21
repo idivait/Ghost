@@ -98,15 +98,11 @@
     "xml": "1.0.1"
   },
   "optionalDependencies": {
-<<<<<<< HEAD
-    "sqlite3": "4.0.1"
-=======
     "sqlite3": "^3.1.13"
->>>>>>> Modify schema to use bio env
   },
   "devDependencies": {
     "eslint": "4.19.1",
-    "grunt": "1.0.3",
+    "grunt": "^1.0.3",
     "grunt-bg-shell": "2.3.3",
     "grunt-cli": "1.2.0",
     "grunt-contrib-clean": "1.1.0",
